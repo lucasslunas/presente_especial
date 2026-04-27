@@ -1,11 +1,21 @@
-/* --- FUNDO ANIMADO E RESET GERAL --- */
+/* --- CONFIGURAÇÃO GLOBAL E CENTRALIZAÇÃO --- */
 body, html {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    display: flex; justify-content: center; align-items: center;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    overflow: hidden; /* Evita rolagem no celular */
+    margin: 0; 
+    padding: 0; 
+    width: 100%; 
+    height: 100%;
+    /* Impede que o site balance para os lados no telemóvel */
+    overflow-x: hidden; 
+    overflow-y: hidden; 
     
-    /* Fundo Degradê Animado (Continua igual!) */
+    /* Centralização absoluta em todos os eixos */
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    
+    /* Fundo Degradê Animado */
     background: linear-gradient(-45deg, #ffe5e5, #f8cdda, #fdfbf7, #fde4ec);
     background-size: 400% 400%;
     animation: respirarFundo 12s ease infinite;
@@ -17,122 +27,138 @@ body, html {
     100% { background-position: 0% 50%; }
 }
 
-/* Container para garantir que tudo fique no meio da tela */
+/* Container principal para garantir o alinhamento */
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
 }
 
-/* --- CONTROLE DE VISIBILIDADE DAS SEÇÕES --- */
-.secao { transition: opacity 0.8s ease; }
+/* --- CONTROLO DE VISIBILIDADE --- */
+.secao { transition: opacity 0.8s ease; width: 100%; display: flex; justify-content: center; }
 .escondida { display: none !important; opacity: 0; }
-.ativa { display: block !important; opacity: 1; }
+.ativa { display: flex !important; opacity: 1; }
 
-/* --- ESTILO DO ENVELOPE (RESPONSIVO) --- */
+/* --- ESTILO DO ENVELOPE --- */
 .envelope-box { 
-    width: 90%;          
-    max-width: 400px;    
+    width: 85%;          
+    max-width: 380px;    
     text-align: center; 
-    cursor: pointer; 
+    cursor: pointer;
+    margin: 0 auto; /* Garante que o envelope não fuja para o lado */
 }
 .envelope-box img { width: 100%; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)); }
 
-/* --- ESTILO DO CARTÃO 3D (RESPONSIVO E CENTRALIZADO) --- */
+/* --- ESTILO DO CARTÃO 3D (REVISÃO DE ALINHAMENTO) --- */
 .cena-3d { 
     width: 90vw;         
-    max-width: 450px;    
+    max-width: 420px;    
     height: auto;        
     aspect-ratio: 1 / 1; 
     perspective: 1200px; 
-    /* Esse é o truque que puxa a imagem inteira um pouco mais para cima */
-    margin-top: -40px; 
+    margin-top: -30px; /* Sobe um pouco para equilibrar as frases */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
 .cartao-3d {
-    width: 100%; height: 100%; position: relative;
+    width: 100%; 
+    height: 100%; 
+    position: relative;
     transform-style: preserve-3d;
     transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
 }
 
-/* --- ESTADOS DE ANIMAÇÃO DO CARTÃO --- */
-.cartao-3d.com-zoom { transform: scale(1.15); }
-.cartao-3d.virado { transform: scale(1.15) rotateY(180deg); }
+/* ANIMAÇÕES DO CARTÃO */
+.cartao-3d.com-zoom { transform: scale(1.12); }
+.cartao-3d.virado { transform: scale(1.12) rotateY(180deg); }
 
-.face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; }
-.face img { width: 100%; height: 100%; object-fit: contain; }
+.face { 
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    backface-visibility: hidden; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.face img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; /* Garante que a foto toda caiba sem cortes laterais */
+}
+
 .verso { transform: rotateY(180deg); }
 
-/* --- TEXTOS FLUTUANTES DO CARTÃO --- */
+/* --- TEXTOS E FRASES (PROTEÇÃO CONTRA DESALINHAMENTO) --- */
 
-/* A frase romântica no topo */
 .frase-linda {
     position: absolute;
-    /* Joga a frase um pouquinho pra cima da borda da foto para não amontoar */
-    top: -25px; 
-    width: 100%;
+    top: -45px; /* Fica acima da foto */
+    left: 0;
+    right: 0;
+    width: 95%;
+    margin: 0 auto; /* Centraliza a caixa de texto */
     text-align: center;
     color: #d63384;
-    font-size: 19px;
+    font-size: 17px;
     font-weight: bold;
     text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.9);
     z-index: 10;
 }
 
-/* A mensagem interativa na base (FRENTE) */
-.dica-final {
+.dica-final, .dica-verso {
     position: absolute;
     bottom: 25px; 
-    width: 80%;
-    left: 10%; 
+    width: 85%;
+    left: 0;
+    right: 0;
+    margin: 0 auto; /* Centraliza horizontalmente */
     text-align: center;
-    background: rgba(255, 255, 255, 0.7); 
+    background: rgba(255, 255, 255, 0.75); 
     padding: 10px;
     border-radius: 15px; 
     color: #d63384;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
     z-index: 10;
     transition: opacity 0.5s ease;
 }
 
-/* --- BOTÃO DE REINICIAR (VERSO) --- */
 .dica-verso {
-    position: absolute;
     bottom: 20px;
-    width: 80%;
-    left: 10%;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 8px;
-    border-radius: 15px;
-    color: #d63384;
-    font-size: 14px;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    z-index: 10;
-    opacity: 0; 
-    transition: opacity 1s ease;
-    pointer-events: none; 
+    background: rgba(255, 255, 255, 0.85);
+    opacity: 0;
+    pointer-events: none;
 }
 
 .cartao-3d.virado .dica-verso {
     opacity: 1;
-    transition-delay: 2.5s; 
+    transition-delay: 2.5s;
     animation: flutuar 2s infinite ease-in-out;
 }
 
-/* Legendas em geral e animação (Envelope, Dica Frente e Verso) */
+/* ANIMAÇÃO DE FLUTUAR */
 .legenda, .dica-final, .dica-verso {
     animation: flutuar 2s infinite ease-in-out;
 }
 
-.legenda { margin-top: 20px; color: #d63384; font-weight: bold; }
+.legenda { 
+    margin-top: 20px; 
+    color: #d63384; 
+    font-weight: bold; 
+    width: 100%;
+    text-align: center;
+}
 
 @keyframes flutuar {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+    50% { transform: translateY(-6px); }
 }
