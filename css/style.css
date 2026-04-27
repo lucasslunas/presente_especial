@@ -1,21 +1,22 @@
-/* --- CONFIGURAÇÃO GLOBAL E CENTRALIZAÇÃO --- */
+/* --- TRAVAMENTO GLOBAL E FUNDO ANIMADO --- */
 body, html {
     margin: 0; 
     padding: 0; 
-    width: 100%; 
-    height: 100%;
-    /* Impede que o site balance para os lados no telemóvel */
+    width: 100vw; /* Usa 100% da largura visual exata */
+    height: 100vh; /* Usa 100% da altura visual exata */
+    
+    /* BLOQUEIO TOTAL DE VAZAMENTO LATERAL */
     overflow-x: hidden; 
     overflow-y: hidden; 
     
-    /* Centralização absoluta em todos os eixos */
+    /* Centralização Absoluta */
     display: flex; 
     justify-content: center; 
     align-items: center;
     
     font-family: 'Segoe UI', Tahoma, sans-serif;
     
-    /* Fundo Degradê Animado */
+    /* Fundo Degradê Animado (Continua lindo!) */
     background: linear-gradient(-45deg, #ffe5e5, #f8cdda, #fdfbf7, #fde4ec);
     background-size: 400% 400%;
     animation: respirarFundo 12s ease infinite;
@@ -27,38 +28,41 @@ body, html {
     100% { background-position: 0% 50%; }
 }
 
-/* Container principal para garantir o alinhamento */
+/* Container que trava o tamanho e impede que o site "dance" */
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100vw;
     height: 100vh;
+    position: relative;
+    box-sizing: border-box; /* Garante que padding não estique o site */
 }
 
-/* --- CONTROLO DE VISIBILIDADE --- */
-.secao { transition: opacity 0.8s ease; width: 100%; display: flex; justify-content: center; }
+/* --- CONTROLE DE VISIBILIDADE --- */
+.secao { transition: opacity 0.8s ease; width: 100%; display: flex; justify-content: center; align-items: center; }
 .escondida { display: none !important; opacity: 0; }
 .ativa { display: flex !important; opacity: 1; }
 
-/* --- ESTILO DO ENVELOPE --- */
+/* --- ESTILO DO ENVELOPE (OCUPA O ESPAÇO) --- */
 .envelope-box { 
-    width: 85%;          
-    max-width: 380px;    
+    width: 90%;          /* Aumentei pra usar mais a tela lateral */
+    max-width: 400px;    
     text-align: center; 
     cursor: pointer;
-    margin: 0 auto; /* Garante que o envelope não fuja para o lado */
+    margin: 0 auto; 
 }
 .envelope-box img { width: 100%; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)); }
 
-/* --- ESTILO DO CARTÃO 3D (REVISÃO DE ALINHAMENTO) --- */
+/* --- ESTILO DO CARTÃO 3D (ZONA DE COMBATE) --- */
 .cena-3d { 
-    width: 90vw;         
-    max-width: 420px;    
+    width: 95vw;         /* Usa 95% da largura da tela lateral */
+    max-width: 450px;    
     height: auto;        
     aspect-ratio: 1 / 1; 
     perspective: 1200px; 
-    margin-top: -30px; /* Sobe um pouco para equilibrar as frases */
+    /* Sobe o conjunto todo para compensar o espaço das frases */
+    margin-top: -25px; 
     position: relative;
     display: flex;
     justify-content: center;
@@ -75,7 +79,7 @@ body, html {
 }
 
 /* ANIMAÇÕES DO CARTÃO */
-.cartao-3d.com-zoom { transform: scale(1.12); }
+.cartao-3d.com-zoom { transform: scale(1.12); } /* Zoom ligeiro */
 .cartao-3d.virado { transform: scale(1.12) rotateY(180deg); }
 
 .face { 
@@ -91,23 +95,22 @@ body, html {
 .face img { 
     width: 100%; 
     height: 100%; 
-    object-fit: contain; /* Garante que a foto toda caiba sem cortes laterais */
+    object-fit: contain; /* Ajusta a foto pra caber, sem cortar lírios */
 }
 
 .verso { transform: rotateY(180deg); }
 
-/* --- TEXTOS E FRASES (PROTEÇÃO CONTRA DESALINHAMENTO) --- */
+/* --- TEXTOS E FRASES (TRAVADOS NO CENTRO HORIZONTAL) --- */
 
 .frase-linda {
     position: absolute;
-    top: -45px; /* Fica acima da foto */
-    left: 0;
-    right: 0;
-    width: 95%;
-    margin: 0 auto; /* Centraliza a caixa de texto */
+    top: -35px; /* Fica acima da foto */
+    left: 50%; /* Joga pro meio exato */
+    transform: translateX(-50%); /* Puxa metade pra esquerda pra centralizar */
+    width: 90%; /* Garante margem de segurança nas laterais */
     text-align: center;
     color: #d63384;
-    font-size: 17px;
+    font-size: 18px; /* Ajustei pra caber melhor em telas pequenas */
     font-weight: bold;
     text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.9);
     z-index: 10;
@@ -115,33 +118,32 @@ body, html {
 
 .dica-final, .dica-verso {
     position: absolute;
-    bottom: 25px; 
-    width: 85%;
-    left: 0;
-    right: 0;
-    margin: 0 auto; /* Centraliza horizontalmente */
+    bottom: 20px; 
+    left: 50%; /* Joga pro meio exato */
+    transform: translateX(-50%); /* Puxa metade pra esquerda pra centralizar */
+    width: 85%; /* Margem de segurança lateral */
     text-align: center;
-    background: rgba(255, 255, 255, 0.75); 
+    background: rgba(255, 255, 255, 0.8); /* Fundo um pouco mais opaco */
     padding: 10px;
     border-radius: 15px; 
     color: #d63384;
     font-size: 15px;
     font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
     z-index: 10;
     transition: opacity 0.5s ease;
 }
 
 .dica-verso {
-    bottom: 20px;
-    background: rgba(255, 255, 255, 0.85);
+    bottom: 15px;
+    background: rgba(255, 255, 255, 0.9);
     opacity: 0;
     pointer-events: none;
 }
 
 .cartao-3d.virado .dica-verso {
     opacity: 1;
-    transition-delay: 2.5s;
+    transition-delay: 2.5s; /* Mostra depois que ela lê o poema */
     animation: flutuar 2s infinite ease-in-out;
 }
 
@@ -160,5 +162,5 @@ body, html {
 
 @keyframes flutuar {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-5px); }
 }
