@@ -15,11 +15,11 @@ body, html {
 .escondida { display: none !important; opacity: 0; }
 .ativa { display: flex !important; opacity: 1; }
 
-/* --- ENVELOPE (AUMENTADO) --- */
+/* --- ENVELOPE --- */
 .envelope-box { width: 90%; max-width: 400px; text-align: center; cursor: pointer; }
 .envelope-box img { width: 100%; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
 
-/* --- CARTÃO 3D: IMAGENS GRANDES E CENTRALIZADAS --- */
+/* --- CARTÃO 3D: IMAGENS GRANDES E FIRMES --- */
 .cena-3d { 
     width: 92vw;         /* Quase toda a largura do celular */
     height: 92vw;        /* Trava o quadrado perfeito */
@@ -33,7 +33,7 @@ body, html {
     align-items: center;
     
     margin: 0 auto;
-    margin-top: -35px; /* Sobe o conjunto para equilibrar os textos */
+    margin-top: -100px; /* Sobe o conjunto para tirar a sensação de "caído" */
     position: relative;
 }
 
@@ -56,7 +56,7 @@ body, html {
 .face img { width: 100%; height: 100%; object-fit: contain; }
 .verso { transform: rotateY(180deg); }
 
-/* --- TEXTOS E BOTÕES CENTRALIZADOS --- */
+/* --- TEXTOS E BOTÕES --- */
 
 .frase-linda {
     position: absolute;
@@ -69,11 +69,17 @@ body, html {
     font-weight: bold;
     text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.9);
     z-index: 10;
+    transition: opacity 0.5s ease;
+}
+
+/* Limpa a poluição visual: Esconde a frase de cima quando o cartão vira */
+.cartao-3d.virado .frase-linda {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .dica-final, .dica-verso {
     position: absolute;
-    bottom: 15px; 
     width: 90%; 
     left: 5%;
     text-align: center;
@@ -88,7 +94,16 @@ body, html {
     transition: opacity 0.5s ease;
 }
 
-.dica-verso { opacity: 0; pointer-events: none; }
+.dica-final {
+    bottom: 15px;
+}
+
+.dica-verso { 
+    bottom: 25px; /* Mais altinho para compensar a borda da imagem do urso */
+    opacity: 0; 
+    pointer-events: none; 
+}
+
 .cartao-3d.virado .dica-verso {
     opacity: 1; transition-delay: 2.5s; animation: flutuar 2s infinite ease-in-out;
 }
