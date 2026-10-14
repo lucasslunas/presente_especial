@@ -56,7 +56,7 @@ const els = {
   audioTransport:$('#audioTransport'), audioPlayBtn:$('#audioPlayBtn'), audioPlayIcon:$('#audioPlayIcon'),
   audioNowTitle:$('#audioNowTitle'), audioTime:$('#audioTime'), audioSeek:$('#audioSeek'),
   audioAuto:$('#audioAuto'),
-  rotateTip:$('#rotateTip'), toast:$('#toast')
+  rotateTip:$('#rotateTip'), toast:$('#toast'), shell:$('#shell'), fullscreenBtn:$('#fullscreenBtn'), fullscreenLabel:$('#fullscreenLabel'), fullscreenIcon:$('#fullscreenIcon')
 };
 
 let pageIndex=0, transitionKey=0, envelopeOpening=false, toastTimeout, currentAudio=null;
@@ -215,6 +215,7 @@ function showPage(index,{instant=false,updateHash=true}={}){
   envelopeOpening=false;
   els.artwork.classList.remove('art-opening');
   pageIndex=index;
+  if(isImmersive())els.artwork.scrollTop=0;
   const page=pages[index];
   const id=++transitionKey;
   els.pageNumber.textContent=padded(index);
@@ -299,6 +300,57 @@ function openZoom(){
   zoomSizing();
   els.zoomScroll.scrollTo({top:0,left:0,behavior:'instant'});
 }
+// TELA CHEIA: modo de leitura horizontal, com gesto lateral para trocar páginas.
+// Android/desktop: Fullscreen API nativa. iOS/Safari sem suporte: modo imersivo CSS.
+let immersiveFallback = false;
+function isImmersive(){return Boolean(document.fullscreenElement === els.shell || immersiveFallback);}
+function syncFullscreenUI(){
+  const active=isImmersive();
+  els.shell.classList.toggle('is-immersive',active);
+  els.fullscreenBtn.setAttribute('aria-pressed',String(active));
+  els.fullscreenBtn.setAttribute('aria-label',active?'Sair da tela cheia':'Entrar em tela cheia para passar as páginas');
+  els.fullscreenBtn.title=active?'Sair da tela cheia':'Tela cheia: passar páginas deslizando';
+  els.fullscreenLabel.textContent=active?'Sair':'Tela cheia';
+  els.fullscreenIcon.innerHTML=active
+   ? '<path d="M3 9h6V3M21 9h-6V3M3 15h6v6M21 15h-6v6"/>'
+   : '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>';
+}
+async function exitImmersive(){
+  immersiveFallback=false;
+  if(document.fullscreenElement===els.shell){
+    try {await document.exitFullscreen();} catch(_e){}
+  }
+  try {if(screen.orientation?.unlock)screen.orientation.unlock();} catch(_e){}
+  syncFullscreenUI();
+}
+async function enterImmersive(){
+  // Caso o navegador não suporte requestFullscreen (iPhone), usar layout imersivo.
+  immersiveFallback=true;
+  syncFullscreenUI();
+  if(els.shell.requestFullscreen){
+    try{
+      await els.shell.requestFullscreen({navigationUI:'hide'});
+      immersiveFallback=false;
+      syncFullscreenUI();
+      // Tentativa opcional de orientar em paisagem. Se falhar, funciona ao girar o aparelho.
+      if(matchMedia('(pointer:coarse)').matches && matchMedia('(orientation:portrait)').matches){
+        try {if(screen.orientation?.lock)await screen.orientation.lock('landscape');}catch(_e){}
+      }
+    }catch(_e){syncFullscreenUI();}
+  }
+  if(matchMedia('(pointer:coarse) and (orientation:landscape)').matches)
+    toast('Deslize para cima para ler tudo e para os lados para trocar a página. ♡');
+}
+async function toggleImmersive(){
+  if(isImmersive())await exitImmersive();else await enterImmersive();
+}
+document.addEventListener('fullscreenchange',()=>{
+  if(document.fullscreenElement!==els.shell)immersiveFallback=false;
+  syncFullscreenUI();
+});
+// Painel de áudio dentro do elemento em tela cheia, para funcionar no Android.
+els.shell.append(els.audioPanel,els.toast);
+
 function initOrientationTip(){
   const isPortrait=matchMedia('(max-width:700px) and (orientation:portrait)').matches;
   let alreadyShown=false;try{alreadyShown=sessionStorage.getItem('gabi-rotate-dismissed')==='yes';}catch(_e){}
@@ -312,15 +364,12 @@ $('#nextBtn').addEventListener('click',next);
 els.artNext.addEventListener('click',next);
 els.artHome.addEventListener('click',()=>showPage(0));
 els.envelope.addEventListener('click',openEnvelope);
-$('#indexBtn').addEventListener('click',openIndex);
+$('#indexBtn').addEventListener('click',async()=>{if(isImmersive())await exitImmersive();openIndex();});
 $('#closeIndexBtn').addEventListener('click',()=>els.indexDialog.close());
-$('#fullscreenBtn').addEventListener('click',async()=>{
-  try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else toast('Use a opção de tela cheia do seu navegador para ampliar o livrinho.');}
-  catch(_e){toast('Este navegador não permitiu tela cheia. Você ainda pode virar o celular.');}
-});
 $('#zoomBtn').addEventListener('click',openZoom);
+els.fullscreenBtn.addEventListener('click',toggleImmersive);
 // Touching a drawing opens the reading/zoom view. The embedded Continue and Envelope buttons still work.
-els.pageImage.addEventListener('click',openZoom);
+els.pageImage.addEventListener('click',()=>{if(!isImmersive())openZoom();});
 $('#closeZoomBtn').addEventListener('click',()=>els.zoomDialog.close());
 els.audioBtn.addEventListener('click',toggleAudioPanel);
 $('#audioCloseBtn').addEventListener('click',closeAudioPanel);
@@ -342,6 +391,7 @@ $('#closeRotateBtn').addEventListener('click',closeRotate);
 window.addEventListener('resize',()=>{if(els.zoomDialog.open)zoomSizing();if(matchMedia('(orientation:landscape)').matches)els.rotateTip.hidden=true;});
 window.addEventListener('hashchange',()=>showPage(indexFromHash(),{updateHash:false}));
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && immersiveFallback){e.preventDefault();exitImmersive();return;}
   if(els.indexDialog.open||els.zoomDialog.open)return;
   if(!els.audioPanel.hidden){if(e.key==='Escape')closeAudioPanel();return;}
   if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
@@ -350,9 +400,25 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Home'){e.preventDefault();showPage(0);}
   else if(e.key==='End'){e.preventDefault();showPage(pages.length-1);}
 });
-let touchStart=null;
-$('#stage').addEventListener('touchstart',e=>{if(e.target.closest('button'))return;const t=e.changedTouches[0];touchStart={x:t.clientX,y:t.clientY};},{passive:true});
-$('#stage').addEventListener('touchend',e=>{if(!touchStart||e.target.closest('button')){touchStart=null;return;}const t=e.changedTouches[0],dx=t.clientX-touchStart.x,dy=t.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.4){if(dx<0)next();else previous();}},{passive:true});
+// Deslizar para os lados troca página inclusive na tela cheia.
+// Também funciona quando o gesto começa sobre o botão transparente desenhado na arte.
+let touchStart=null, suppressSwipeClickUntil=0;
+$('#stage').addEventListener('touchstart',e=>{
+  if(e.touches.length!==1 || e.target.closest('.page-arrow')){touchStart=null;return;}
+  const t=e.changedTouches[0];touchStart={x:t.clientX,y:t.clientY};
+},{passive:true});
+$('#stage').addEventListener('touchend',e=>{
+  if(!touchStart || e.changedTouches.length!==1){touchStart=null;return;}
+  const t=e.changedTouches[0], dx=t.clientX-touchStart.x, dy=t.clientY-touchStart.y;
+  touchStart=null;
+  if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.35){
+    suppressSwipeClickUntil=performance.now()+650;
+    if(dx<0)next();else previous();
+  }
+},{passive:true});
+$('#stage').addEventListener('click',e=>{
+  if(performance.now()<suppressSwipeClickUntil && !e.target.closest('.page-arrow')){e.preventDefault();e.stopImmediatePropagation();}
+},true);
 $('#progressTrack').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();const ratio=(e.clientX-r.left)/r.width;showPage(Math.max(0,Math.min(pages.length-1,Math.floor(ratio*pages.length))));});
 els.indexDialog.addEventListener('click',e=>{if(e.target===els.indexDialog)els.indexDialog.close();});
 els.zoomDialog.addEventListener('click',e=>{if(e.target===els.zoomDialog)els.zoomDialog.close();});
