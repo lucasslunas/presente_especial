@@ -70,11 +70,14 @@ const padded=i=>String(i+1).padStart(2,'0');
 const asset=i=>`assets/${pages[i].slug}.webp`;
 const thumb=i=>`assets/${pages[i].slug}-mini.webp`;
 
-function toast(message){
+function toast(message,{duration=3400,readingTip=false}={}){
   clearTimeout(toastTimeout);
   els.toast.textContent=message;
+  els.toast.classList.toggle('reading-tip',readingTip);
   els.toast.classList.add('visible');
-  toastTimeout=setTimeout(()=>els.toast.classList.remove('visible'),3400);
+  toastTimeout=setTimeout(()=>{
+    els.toast.classList.remove('visible','reading-tip');
+  },duration);
 }
 function refreshTransport(){
   const chosen=chosenTrack();
@@ -354,7 +357,8 @@ async function enterImmersive(){
     }catch(_e){syncFullscreenUI();}
   }
   if(matchMedia('(pointer:coarse) and (orientation:landscape)').matches)
-    toast('Toque na tela para mostrar os botões; deslize para os lados para virar a página. ♡');
+    toast('↓ A imagem continua mais abaixo! Deslize o dedo na vertical para ver todos os detalhes.\n↔ Deslize para os lados para mudar de página. ♡',
+      {duration:6500,readingTip:true});
 }
 async function toggleImmersive(){
   if(isImmersive())await exitImmersive();else await enterImmersive();

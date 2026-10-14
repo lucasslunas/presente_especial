@@ -266,3 +266,14 @@
 @media (prefers-reduced-motion:reduce){
   .shell.is-immersive .topbar,.shell:fullscreen .topbar{transition:none;}
 }
+
+/* Guia discreto de gestos: aparece por alguns segundos ao abrir tela cheia no celular. */
+.toast.reading-tip{
+  white-space:pre-line;line-height:1.55;font-size:clamp(11px,1.8vw,13px);
+  max-width:min(640px,calc(100vw - 108px));width:max-content;
+  bottom:max(14px,env(safe-area-inset-bottom));
+  padding:9px 17px;border-radius:15px;
+  background:rgba(20,17,43,.94);border-color:rgba(255,184,220,.65);
+  box-shadow:0 10px 36px rgba(0,0,0,.66);font-weight:500;
+}
+@media(orientation:portrait){.toast.reading-tip{max-width:calc(100vw - 28px);font-size:12px;}}
