@@ -303,10 +303,25 @@ function openZoom(){
 // TELA CHEIA: modo de leitura horizontal, com gesto lateral para trocar páginas.
 // Android/desktop: Fullscreen API nativa. iOS/Safari sem suporte: modo imersivo CSS.
 let immersiveFallback = false;
+let immersiveBarTimeout = null;
+let immersiveTouchStart = null;
+const immersiveTouchMode = () => matchMedia('(pointer:coarse)').matches;
 function isImmersive(){return Boolean(document.fullscreenElement === els.shell || immersiveFallback);}
+function showImmersiveBar(){
+  clearTimeout(immersiveBarTimeout);
+  if(!isImmersive() || !immersiveTouchMode())return;
+  els.shell.classList.remove('immersive-bar-hidden');
+  // Give the reader time to find "Sair", then get the controls out of the drawing.
+  immersiveBarTimeout=setTimeout(()=>{
+    if(isImmersive() && els.audioPanel.hidden && !els.indexDialog.open)
+      els.shell.classList.add('immersive-bar-hidden');
+  },3800);
+}
 function syncFullscreenUI(){
   const active=isImmersive();
   els.shell.classList.toggle('is-immersive',active);
+  if(active)showImmersiveBar();
+  else {clearTimeout(immersiveBarTimeout);els.shell.classList.remove('immersive-bar-hidden');}
   els.fullscreenBtn.setAttribute('aria-pressed',String(active));
   els.fullscreenBtn.setAttribute('aria-label',active?'Sair da tela cheia':'Entrar em tela cheia para passar as páginas');
   els.fullscreenBtn.title=active?'Sair da tela cheia':'Tela cheia: passar páginas deslizando';
@@ -339,7 +354,7 @@ async function enterImmersive(){
     }catch(_e){syncFullscreenUI();}
   }
   if(matchMedia('(pointer:coarse) and (orientation:landscape)').matches)
-    toast('Deslize para cima para ler tudo e para os lados para trocar a página. ♡');
+    toast('Toque na tela para mostrar os botões; deslize para os lados para virar a página. ♡');
 }
 async function toggleImmersive(){
   if(isImmersive())await exitImmersive();else await enterImmersive();
@@ -368,6 +383,22 @@ $('#indexBtn').addEventListener('click',async()=>{if(isImmersive())await exitImm
 $('#closeIndexBtn').addEventListener('click',()=>els.indexDialog.close());
 $('#zoomBtn').addEventListener('click',openZoom);
 els.fullscreenBtn.addEventListener('click',toggleImmersive);
+// In immersive mobile view a short tap restores the top controls;
+// horizontal page swipes and vertical scrolling should NOT restore them.
+els.shell.addEventListener('pointerdown',event=>{
+  if(!isImmersive() || !immersiveTouchMode() || !event.isPrimary)return;
+  immersiveTouchStart={x:event.clientX,y:event.clientY,id:event.pointerId};
+});
+els.shell.addEventListener('pointerup',event=>{
+  const start=immersiveTouchStart;
+  immersiveTouchStart=null;
+  if(!start || start.id!==event.pointerId || !isImmersive() || !immersiveTouchMode())return;
+  if(Math.hypot(event.clientX-start.x,event.clientY-start.y)<16)showImmersiveBar();
+});
+els.shell.addEventListener('pointercancel',()=>{immersiveTouchStart=null;});
+// Don't hide the exit button while a keyboard user is tabbing through it.
+els.fullscreenBtn.addEventListener('focus',()=>{if(isImmersive())showImmersiveBar();});
+els.indexBtn?.addEventListener('focus',()=>{if(isImmersive())showImmersiveBar();});
 // Touching a drawing opens the reading/zoom view. The embedded Continue and Envelope buttons still work.
 els.pageImage.addEventListener('click',()=>{if(!isImmersive())openZoom();});
 $('#closeZoomBtn').addEventListener('click',()=>els.zoomDialog.close());
