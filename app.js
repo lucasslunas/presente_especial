@@ -342,23 +342,28 @@ async function exitImmersive(){
   syncFullscreenUI();
 }
 async function enterImmersive(){
-  // Caso o navegador não suporte requestFullscreen (iPhone), usar layout imersivo.
+  // Chrome/Android mostra um aviso branco próprio quando requestFullscreen() é chamado.
+  // O site não pode personalizar ou esconder esse aviso. No celular, optamos pelo
+  // modo imersivo CSS, que mantém a navegação, a rolagem vertical e nossa dica.
+  const isMobile = matchMedia('(pointer:coarse), (any-pointer:coarse), (max-width:920px)').matches;
   immersiveFallback=true;
   syncFullscreenUI();
-  if(els.shell.requestFullscreen){
+  // O modo nativo permanece apenas no computador, onde o aviso de Android não existe.
+  if(!isMobile && els.shell.requestFullscreen){
     try{
       await els.shell.requestFullscreen({navigationUI:'hide'});
       immersiveFallback=false;
       syncFullscreenUI();
-      // Tentativa opcional de orientar em paisagem. Se falhar, funciona ao girar o aparelho.
-      if(matchMedia('(pointer:coarse)').matches && matchMedia('(orientation:portrait)').matches){
-        try {if(screen.orientation?.lock)await screen.orientation.lock('landscape');}catch(_e){}
-      }
     }catch(_e){syncFullscreenUI();}
   }
-  if(matchMedia('(pointer:coarse) and (orientation:landscape)').matches)
-    toast('↓ A imagem continua mais abaixo! Deslize o dedo na vertical para ver todos os detalhes.\n↔ Deslize para os lados para mudar de página. ♡',
-      {duration:6500,readingTip:true});
+  if(isMobile){
+    els.rotateTip.hidden=true;
+    const landscape=matchMedia('(orientation:landscape)').matches;
+    const tip=landscape
+      ? '↕ A imagem continua mais abaixo: deslize para cima para ver o restante.\n↔ Deslize para os lados para trocar de página.\n♡ Toque para mostrar o botão Sair.'
+      : '↻ Vire o celular de lado para ler as páginas maiores.\n↔ Deslize para os lados para trocar de página.\n♡ Toque para mostrar o botão Sair.';
+    toast(tip,{duration:6200,readingTip:true});
+  }
 }
 async function toggleImmersive(){
   if(isImmersive())await exitImmersive();else await enterImmersive();
@@ -373,7 +378,7 @@ els.shell.append(els.audioPanel,els.toast);
 function initOrientationTip(){
   const isPortrait=matchMedia('(max-width:700px) and (orientation:portrait)').matches;
   let alreadyShown=false;try{alreadyShown=sessionStorage.getItem('gabi-rotate-dismissed')==='yes';}catch(_e){}
-  if(isPortrait&&!alreadyShown)setTimeout(()=>{if(matchMedia('(orientation:portrait)').matches)els.rotateTip.hidden=false;},1200);
+  if(isPortrait&&!alreadyShown)setTimeout(()=>{if(!isImmersive() && matchMedia('(orientation:portrait)').matches)els.rotateTip.hidden=false;},1200);
 }
 function closeRotate(){els.rotateTip.hidden=true;try{sessionStorage.setItem('gabi-rotate-dismissed','yes');}catch(_e){}}
 

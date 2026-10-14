@@ -277,3 +277,16 @@
   box-shadow:0 10px 36px rgba(0,0,0,.66);font-weight:500;
 }
 @media(orientation:portrait){.toast.reading-tip{max-width:calc(100vw - 28px);font-size:12px;}}
+
+/* A dica substitui o aviso intrusivo do navegador na leitura imersiva de celular. */
+@media (pointer:coarse), (max-width:920px) {
+  .shell.is-immersive .toast.reading-tip {
+    bottom:max(11px,env(safe-area-inset-bottom));
+    font-weight:600;
+    padding:11px 17px;
+    border:1px solid rgba(255,177,216,.67);
+    background:linear-gradient(135deg,rgba(25,18,48,.96),rgba(40,23,55,.96));
+    color:#fff0fa;
+    box-shadow:0 8px 30px rgba(0,0,0,.58);
+  }
+}
