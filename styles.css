@@ -119,3 +119,23 @@
   .zoom-scroll{height:calc(100dvh - 49px);padding:8px;}
   .zoom-top #zoomTitle{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 }
+
+/* Ampliar: uma unica visualizacao maxima sem menu de zoom manual. */
+.zoom-dialog{background:#070b1b;}
+.zoom-top{
+  position:fixed;top:max(8px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));
+  z-index:5;width:auto;height:auto;min-height:0;padding:0;
+  border:0;background:none;pointer-events:none;
+}
+.zoom-top .dialog-close{
+  display:grid;place-items:center;pointer-events:auto;
+  width:45px;height:45px;border-radius:50%;padding:0;
+  border:1px solid rgba(255,230,252,.55);background:rgba(12,15,34,.88);
+  box-shadow:0 3px 20px rgba(0,0,0,.75);color:#fff;line-height:1;font-size:27px;
+}
+.zoom-scroll{height:100dvh;width:100%;padding:3px!important;overflow:auto;
+  display:block;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  touch-action:pan-x pan-y;scrollbar-width:thin;text-align:left;}
+.zoom-scroll img{display:block;max-width:none;max-height:none;height:auto;width:auto;
+  margin:0 auto;box-shadow:none;border-radius:1px;touch-action:pan-x pan-y;}
+@media (max-width:700px){.zoom-scroll{height:100dvh;padding:3px!important;}}

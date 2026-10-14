@@ -50,7 +50,7 @@ const els = {
   progressFill:$('#progressFill'), progressPercent:$('#progressPercent'),
   prevBtn:$('#prevBtn'), nextBtn:$('#nextBtn'), artNext:$('#artNext'), artHome:$('#artHome'), envelope:$('#envelopeHit'),
   indexDialog:$('#indexDialog'), chapterGrid:$('#chapterGrid'),
-  zoomDialog:$('#zoomDialog'), zoomImage:$('#zoomImage'), zoomScroll:$('#zoomScroll'), zoomTitle:$('#zoomTitle'), zoomValue:$('#zoomValue'),
+  zoomDialog:$('#zoomDialog'), zoomImage:$('#zoomImage'), zoomScroll:$('#zoomScroll'),
   audio:$('#sceneAudio'), audioBtn:$('#audioBtn'), audioLabel:$('#audioLabel'), audioIcon:$('#audioIcon'),
   audioPanel:$('#audioPanel'), audioPageTitle:$('#audioPageTitle'), audioTracks:$('#audioTracks'),
   audioTransport:$('#audioTransport'), audioPlayBtn:$('#audioPlayBtn'), audioPlayIcon:$('#audioPlayIcon'),
@@ -59,7 +59,7 @@ const els = {
   rotateTip:$('#rotateTip'), toast:$('#toast')
 };
 
-let pageIndex=0, transitionKey=0, envelopeOpening=false, toastTimeout, zoomFactor=1, currentAudio=null;
+let pageIndex=0, transitionKey=0, envelopeOpening=false, toastTimeout, currentAudio=null;
 let audioPlaying=false, trackIndex=0, loadedAudioKey='', autoSoundtrack=true;
 const soundtracks = window.TRILHAS_GABI || {};
 const pageTrackList = (index=pageIndex) => Array.isArray(soundtracks[index+1]) ? soundtracks[index+1] : [];
@@ -273,38 +273,32 @@ function buildIndex(){
   });
 }
 function openIndex(){buildIndex();els.indexDialog.showModal();const active=els.chapterGrid.querySelectorAll('.chapter-card')[pageIndex];active?.scrollIntoView({block:'nearest'});}
+// Ampliação automática: um toque utiliza o máximo da tela, sem controles de zoom.
+// No celular horizontal, usa toda a largura e permite deslizar para baixo
+// quando a ilustração é mais alta que a tela. No vertical, usa a altura
+// disponível e permite deslocar horizontalmente para ler as letras.
 function zoomSizing(){
   const img=els.zoomImage;
-  if(!img.naturalWidth)return;
-  const fit=Math.min((window.innerWidth-48)/img.naturalWidth,(window.innerHeight-110)/img.naturalHeight);
-  img.style.width=`${Math.round(img.naturalWidth*fit*zoomFactor)}px`;
-  els.zoomValue.textContent=`${Math.round(zoomFactor*100)}%`;
+  if(!els.zoomDialog.open || !img.naturalWidth)return;
+  const visibleW=Math.max(1,els.zoomScroll.clientWidth-6);
+  const visibleH=Math.max(1,els.zoomScroll.clientHeight-6);
+  const aspect=img.naturalWidth/img.naturalHeight;
+  const isPortrait=window.matchMedia('(orientation: portrait) and (max-width: 700px)').matches;
+  const isMobile=window.matchMedia('(pointer:coarse)').matches || window.innerWidth<=920;
+  let drawWidth;
+  if(isPortrait) drawWidth=Math.max(visibleW, visibleH*aspect);
+  else if(isMobile) drawWidth=visibleW;
+  else drawWidth=Math.min(visibleW,visibleH*aspect);
+  img.style.width=`${Math.round(Math.min(img.naturalWidth,drawWidth))}px`;
 }
-function openZoom(){zoomFactor=(matchMedia('(pointer:coarse)').matches||window.innerWidth<=700)?2:1;els.zoomTitle.textContent=pages[pageIndex].title;els.zoomImage.src=asset(pageIndex);els.zoomImage.alt=pages[pageIndex].alt;els.zoomDialog.showModal();els.zoomImage.onload=zoomSizing;zoomSizing();els.zoomScroll.scrollTo(0,0);}
-function setZoom(change){zoomFactor=Math.max(1,Math.min(4,zoomFactor+change));zoomSizing();}
-// Double tap in zoom view to magnify text, or return to fit-to-screen.
-let lastZoomTap=0;
-els.zoomImage.addEventListener('click',()=>{
-  const now=Date.now();
-  if(now-lastZoomTap<330){zoomFactor=zoomFactor<1.7?2.4:1;zoomSizing();lastZoomTap=0;}
-  else lastZoomTap=now;
-});
-// Two-finger pinch zoom; a single finger can scroll the enlarged illustration.
-let pinchStartDistance=0, pinchStartFactor=1;
-els.zoomScroll.addEventListener('touchstart',e=>{
-  if(e.touches.length!==2)return;
-  const [a,b]=e.touches;
-  pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
-  pinchStartFactor=zoomFactor;
-},{passive:true});
-els.zoomScroll.addEventListener('touchmove',e=>{
-  if(e.touches.length!==2||pinchStartDistance<=0)return;
-  const [a,b]=e.touches;
-  const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
-  zoomFactor=Math.max(1,Math.min(4,pinchStartFactor*distance/pinchStartDistance));
-  zoomSizing();e.preventDefault();
-},{passive:false});
-els.zoomScroll.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStartDistance=0;},{passive:true});
+function openZoom(){
+  els.zoomImage.onload=()=>{zoomSizing();els.zoomScroll.scrollTo({top:0,left:0,behavior:'instant'});};
+  els.zoomImage.alt=pages[pageIndex].alt;
+  els.zoomImage.src=asset(pageIndex);
+  if(!els.zoomDialog.open)els.zoomDialog.showModal();
+  zoomSizing();
+  els.zoomScroll.scrollTo({top:0,left:0,behavior:'instant'});
+}
 function initOrientationTip(){
   const isPortrait=matchMedia('(max-width:700px) and (orientation:portrait)').matches;
   let alreadyShown=false;try{alreadyShown=sessionStorage.getItem('gabi-rotate-dismissed')==='yes';}catch(_e){}
@@ -328,8 +322,6 @@ $('#zoomBtn').addEventListener('click',openZoom);
 // Touching a drawing opens the reading/zoom view. The embedded Continue and Envelope buttons still work.
 els.pageImage.addEventListener('click',openZoom);
 $('#closeZoomBtn').addEventListener('click',()=>els.zoomDialog.close());
-$('#zoomInBtn').addEventListener('click',()=>setZoom(.3));
-$('#zoomOutBtn').addEventListener('click',()=>setZoom(-.3));
 els.audioBtn.addEventListener('click',toggleAudioPanel);
 $('#audioCloseBtn').addEventListener('click',closeAudioPanel);
 els.audioPlayBtn.addEventListener('click',playSelectedTrack);

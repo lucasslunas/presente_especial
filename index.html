@@ -9,9 +9,9 @@
   <title>Para a Gabi ♡ — Um livrinho de lembranças</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" as="image" href="assets/01-capa.webp">
-  <link rel="stylesheet" href="styles.css?v=mobile2">
+  <link rel="stylesheet" href="styles.css?v=ampliar-auto3">
   <script defer src="trilhas.js"></script>
-  <script defer src="app.js?v=mobile2"></script>
+  <script defer src="app.js?v=ampliar-auto3"></script>
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><div class="ambient-picture" id="ambientPicture"></div><div class="ambient-shade"></div><div class="stars"></div></div>
@@ -50,7 +50,7 @@
         <div class="page-info"><span class="eyebrow" id="pageCategory">Uma surpresa feita com carinho</span><div class="page-title" id="pageTitle">Oi, Gabi! ♡</div></div>
         <div class="reader-tools">
           <button type="button" id="audioBtn" class="sound-button" aria-haspopup="dialog" aria-controls="audioPanel" aria-expanded="false" aria-label="Abrir trilhas sonoras desta página"><span id="audioIcon">♫</span><span id="audioLabel">Trilha sonora</span></button>
-          <button type="button" id="zoomBtn" class="subtle-button" aria-label="Ampliar imagem" title="Ampliar esta página">
+          <button type="button" id="zoomBtn" class="subtle-button" aria-label="Abrir imagem automaticamente ampliada" title="Abrir imagem em tamanho máximo">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg><span>Ampliar</span>
           </button>
         </div>
@@ -70,7 +70,7 @@
   </dialog>
 
   <dialog class="zoom-dialog" id="zoomDialog" aria-label="Imagem ampliada">
-    <div class="zoom-top"><span id="zoomTitle">Página ampliada</span><div><button type="button" class="zoom-control" id="zoomOutBtn" aria-label="Diminuir zoom">−</button><span id="zoomValue">100%</span><button type="button" class="zoom-control" id="zoomInBtn" aria-label="Aumentar zoom">+</button><button type="button" class="dialog-close" id="closeZoomBtn" aria-label="Fechar imagem ampliada">×</button></div></div>
+    <div class="zoom-top"><button type="button" class="dialog-close" id="closeZoomBtn" aria-label="Voltar para o livrinho" title="Voltar para o livrinho">×</button></div>
     <div class="zoom-scroll" id="zoomScroll"><img id="zoomImage" alt="Página ampliada do livrinho"></div>
   </dialog>
 
