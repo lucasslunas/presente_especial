@@ -457,6 +457,9 @@ $('#stage').addEventListener('click',e=>{
 $('#progressTrack').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();const ratio=(e.clientX-r.left)/r.width;showPage(Math.max(0,Math.min(pages.length-1,Math.floor(ratio*pages.length))));});
 els.indexDialog.addEventListener('click',e=>{if(e.target===els.indexDialog)els.indexDialog.close();});
 els.zoomDialog.addEventListener('click',e=>{if(e.target===els.zoomDialog)els.zoomDialog.close();});
-// Start with the cover unless the link points to a specific page.
-showPage(indexFromHash(),{instant:true,updateHash:false});
+// Toda abertura ou atualização do site recomeça na capa.
+// A navegação durante a leitura continua guardando o número da página na URL.
+showPage(0,{instant:true,updateHash:true});
+// Evita que o navegador restaure a posição vertical anterior ao recarregar.
+window.scrollTo({top:0,left:0,behavior:'instant'});
 initOrientationTip();
