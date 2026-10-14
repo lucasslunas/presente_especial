@@ -278,10 +278,11 @@
 }
 @media(orientation:portrait){.toast.reading-tip{max-width:calc(100vw - 28px);font-size:12px;}}
 
-/* A dica substitui o aviso intrusivo do navegador na leitura imersiva de celular. */
+/* Nossa dica entra após o aviso de segurança do Chrome no modo nativo. */
 @media (pointer:coarse), (max-width:920px) {
   .shell.is-immersive .toast.reading-tip {
-    bottom:max(11px,env(safe-area-inset-bottom));
+    /* Um pouco mais acima da borda inferior, para facilitar a leitura. */
+    bottom:max(52px,calc(env(safe-area-inset-bottom) + 46px));
     font-weight:600;
     padding:11px 17px;
     border:1px solid rgba(255,177,216,.67);
