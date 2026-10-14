@@ -71,3 +71,51 @@
 .audio-footnote{font-size:10px;color:#bda9cd;line-height:1.5;margin:11px 0 0}
 @media(max-width:700px){.audio-panel{right:12px;bottom:max(70px,calc(env(safe-area-inset-bottom) + 68px));max-height:65dvh}.audio-panel-head h2{font-size:16px}.sound-button{white-space:nowrap}}
 @media(max-height:520px) and (orientation:landscape){.audio-panel{right:9px;bottom:6px;max-height:94dvh;width:min(360px,45vw);padding-bottom:8px}.audio-panel-head{padding-top:9px;padding-bottom:7px}.audio-panel-head h2{font-size:14px}}
+
+
+/* vFinal mobile reading: landscape gets the whole available screen without cropping any artwork. */
+@media (orientation: landscape) and (max-height:650px) {
+  :root { --header:0px; --footer:0px; }
+  .shell { position:relative; height:100dvh; min-height:0; overflow:hidden; padding:env(safe-area-inset-top) max(3px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(3px,env(safe-area-inset-left)); }
+  .topbar { position:absolute; inset: max(4px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) auto max(6px,env(safe-area-inset-left)); height:0; margin:0; border:none; padding:0; z-index:15; pointer-events:none; }
+  .topbar .brand,.topbar .topline {display:none;}
+  .header-right {position:absolute;right:0;top:0;display:flex;align-items:center;gap:7px;pointer-events:auto; background:rgba(8,10,28,.74);border:1px solid rgba(237,209,255,.2);border-radius:17px;padding:4px 7px;backdrop-filter:blur(12px);}
+  .counter { margin:0 4px 0 0; font-size:12px;}
+  .icon-button {height:33px;width:33px;}
+  .reader {padding:0;min-height:0;flex:1;width:100%;}
+  .chapter-badge {display:none;}
+  .stage {width:100%;height:100%;min-height:0;flex:1;gap:0;position:relative;}
+  .artwork {max-width:calc(100% - 6px)!important;height:auto;max-height:100%;}
+  .artwork img {max-width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px)!important;}
+  .page-arrow {position:absolute;top:50%;z-index:12;transform:translateY(-50%);height:44px;width:37px;border-radius:13px;background:rgba(10,10,27,.65);border:1px solid rgba(255,225,255,.38);}
+  .page-arrow-left {left:max(7px,env(safe-area-inset-left));}
+  .page-arrow-right {right:max(7px,env(safe-area-inset-right));}
+  .reader-info {position:absolute;bottom:max(7px,env(safe-area-inset-bottom));left:max(7px,env(safe-area-inset-left));z-index:12;width:auto;min-height:0;padding:0;pointer-events:none;}
+  .page-info {display:none;}
+  .reader-tools {flex-wrap:nowrap;gap:7px;pointer-events:auto;}
+  .reader-tools .sound-button,.reader-tools .subtle-button {height:35px;padding:6px 11px;font-size:11px;box-shadow:0 3px 18px rgba(0,0,0,.5);background:rgba(15,13,36,.86);border:1px solid rgba(253,205,249,.35);}
+  .reader-tools .subtle-button span {display:inline;}
+  .reader-tools .sound-button #audioIcon {font-size:16px;}
+  .footer {display:none;}
+  .audio-panel {bottom:max(7px,env(safe-area-inset-bottom));right:max(7px,env(safe-area-inset-right));max-height:calc(100dvh - 14px);width:min(380px,64vw);}
+}
+@media (orientation:landscape) and (max-height:380px) {
+  .reader-tools .subtle-button span {display:none;}
+  .reader-tools .sound-button,.reader-tools .subtle-button {height:30px;padding:5px 8px;}
+  .header-right{padding:2px 5px;}.icon-button{width:30px;height:30px;}
+}
+/* On a narrow portrait phone, don't sacrifice picture width to side arrows. */
+@media (orientation:portrait) and (max-width:700px) {
+  .shell {min-height:0;}
+  .artwork {max-width:calc(100% - 4px)!important;}
+  .artwork img {max-height:calc(100dvh - var(--header) - var(--footer) - 106px);}
+  .page-arrow{z-index:8;}
+}
+.artwork img{cursor:zoom-in;}
+.zoom-scroll{display:block;overscroll-behavior:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;text-align:center;}
+.zoom-scroll img{margin:0 auto;max-width:none;touch-action:pan-x pan-y;}
+@media (max-width:700px) {
+  .zoom-top{height:49px;}
+  .zoom-scroll{height:calc(100dvh - 49px);padding:8px;}
+  .zoom-top #zoomTitle{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+}

@@ -280,8 +280,31 @@ function zoomSizing(){
   img.style.width=`${Math.round(img.naturalWidth*fit*zoomFactor)}px`;
   els.zoomValue.textContent=`${Math.round(zoomFactor*100)}%`;
 }
-function openZoom(){zoomFactor=1;els.zoomTitle.textContent=pages[pageIndex].title;els.zoomImage.src=asset(pageIndex);els.zoomImage.alt=pages[pageIndex].alt;els.zoomDialog.showModal();els.zoomImage.onload=zoomSizing;zoomSizing();els.zoomScroll.scrollTo(0,0);}
-function setZoom(change){zoomFactor=Math.max(1,Math.min(3.3,zoomFactor+change));zoomSizing();}
+function openZoom(){zoomFactor=(matchMedia('(pointer:coarse)').matches||window.innerWidth<=700)?2:1;els.zoomTitle.textContent=pages[pageIndex].title;els.zoomImage.src=asset(pageIndex);els.zoomImage.alt=pages[pageIndex].alt;els.zoomDialog.showModal();els.zoomImage.onload=zoomSizing;zoomSizing();els.zoomScroll.scrollTo(0,0);}
+function setZoom(change){zoomFactor=Math.max(1,Math.min(4,zoomFactor+change));zoomSizing();}
+// Double tap in zoom view to magnify text, or return to fit-to-screen.
+let lastZoomTap=0;
+els.zoomImage.addEventListener('click',()=>{
+  const now=Date.now();
+  if(now-lastZoomTap<330){zoomFactor=zoomFactor<1.7?2.4:1;zoomSizing();lastZoomTap=0;}
+  else lastZoomTap=now;
+});
+// Two-finger pinch zoom; a single finger can scroll the enlarged illustration.
+let pinchStartDistance=0, pinchStartFactor=1;
+els.zoomScroll.addEventListener('touchstart',e=>{
+  if(e.touches.length!==2)return;
+  const [a,b]=e.touches;
+  pinchStartDistance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  pinchStartFactor=zoomFactor;
+},{passive:true});
+els.zoomScroll.addEventListener('touchmove',e=>{
+  if(e.touches.length!==2||pinchStartDistance<=0)return;
+  const [a,b]=e.touches;
+  const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  zoomFactor=Math.max(1,Math.min(4,pinchStartFactor*distance/pinchStartDistance));
+  zoomSizing();e.preventDefault();
+},{passive:false});
+els.zoomScroll.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStartDistance=0;},{passive:true});
 function initOrientationTip(){
   const isPortrait=matchMedia('(max-width:700px) and (orientation:portrait)').matches;
   let alreadyShown=false;try{alreadyShown=sessionStorage.getItem('gabi-rotate-dismissed')==='yes';}catch(_e){}
@@ -302,6 +325,8 @@ $('#fullscreenBtn').addEventListener('click',async()=>{
   catch(_e){toast('Este navegador não permitiu tela cheia. Você ainda pode virar o celular.');}
 });
 $('#zoomBtn').addEventListener('click',openZoom);
+// Touching a drawing opens the reading/zoom view. The embedded Continue and Envelope buttons still work.
+els.pageImage.addEventListener('click',openZoom);
 $('#closeZoomBtn').addEventListener('click',()=>els.zoomDialog.close());
 $('#zoomInBtn').addEventListener('click',()=>setZoom(.3));
 $('#zoomOutBtn').addEventListener('click',()=>setZoom(-.3));
