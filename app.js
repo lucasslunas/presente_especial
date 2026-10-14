@@ -306,6 +306,8 @@ function openZoom(){
 // TELA CHEIA: modo de leitura horizontal, com gesto lateral para trocar páginas.
 // Android/desktop: Fullscreen API nativa. iOS/Safari sem suporte: modo imersivo CSS.
 let immersiveFallback = false;
+let readingTipDelay = null;
+let fullscreenOpenId = 0;
 let immersiveBarTimeout = null;
 let immersiveTouchStart = null;
 const immersiveTouchMode = () => matchMedia('(pointer:coarse)').matches;
@@ -334,6 +336,12 @@ function syncFullscreenUI(){
    : '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>';
 }
 async function exitImmersive(){
+  fullscreenOpenId++;
+  clearTimeout(readingTipDelay);
+  if(els.toast.classList.contains('reading-tip')){
+    clearTimeout(toastTimeout);
+    els.toast.classList.remove('visible','reading-tip');
+  }
   immersiveFallback=false;
   if(document.fullscreenElement===els.shell){
     try {await document.exitFullscreen();} catch(_e){}
@@ -341,35 +349,59 @@ async function exitImmersive(){
   try {if(screen.orientation?.unlock)screen.orientation.unlock();} catch(_e){}
   syncFullscreenUI();
 }
-async function enterImmersive(){
-  // Chrome/Android mostra um aviso branco próprio quando requestFullscreen() é chamado.
-  // O site não pode personalizar ou esconder esse aviso. No celular, optamos pelo
-  // modo imersivo CSS, que mantém a navegação, a rolagem vertical e nossa dica.
-  const isMobile = matchMedia('(pointer:coarse), (any-pointer:coarse), (max-width:920px)').matches;
-  immersiveFallback=true;
-  syncFullscreenUI();
-  // O modo nativo permanece apenas no computador, onde o aviso de Android não existe.
-  if(!isMobile && els.shell.requestFullscreen){
-    try{
-      await els.shell.requestFullscreen({navigationUI:'hide'});
-      immersiveFallback=false;
-      syncFullscreenUI();
-    }catch(_e){syncFullscreenUI();}
-  }
-  if(isMobile){
-    els.rotateTip.hidden=true;
+function scheduleFullScreenGuide({native=false,token}={}){
+  // O balão branco é um aviso do próprio Chrome: não há como editá-lo.
+  // Se o fullscreen nativo funcionar, nossa dica surge depois desse aviso.
+  clearTimeout(readingTipDelay);
+  if(!matchMedia('(pointer:coarse), (any-pointer:coarse), (max-width:920px)').matches)return;
+  readingTipDelay=setTimeout(()=>{
+    if(!isImmersive() || token!==fullscreenOpenId)return;
     const landscape=matchMedia('(orientation:landscape)').matches;
     const tip=landscape
-      ? '↕ A imagem continua mais abaixo: deslize para cima para ver o restante.\n↔ Deslize para os lados para trocar de página.\n♡ Toque para mostrar o botão Sair.'
-      : '↻ Vire o celular de lado para ler as páginas maiores.\n↔ Deslize para os lados para trocar de página.\n♡ Toque para mostrar o botão Sair.';
-    toast(tip,{duration:6200,readingTip:true});
+      ? '♡ Dica para aproveitar o livrinho:\n↓ A imagem continua mais abaixo: deslize o dedo para cima para descobrir os detalhes.\n↔ Deslize para os lados para trocar de página.\nToque na tela para mostrar o botão Sair.'
+      : '♡ Dica para aproveitar o livrinho:\n↻ Vire o celular de lado para ver as páginas maiores.\n↔ Deslize para os lados para trocar de página.\nToque na tela para mostrar o botão Sair.';
+    toast(tip,{duration:7200,readingTip:true});
+  },native?4100:250);
+}
+async function enterImmersive(){
+  const token=++fullscreenOpenId;
+  const isMobile=matchMedia('(pointer:coarse), (any-pointer:coarse), (max-width:920px)').matches;
+  immersiveFallback=true;
+  syncFullscreenUI();
+  els.rotateTip.hidden=true;
+  let native=false;
+  // Restaurado o Fullscreen nativo do Chrome/Android, com leitura vertical
+  // da arte e deslize horizontal entre as páginas. Safari sem suporte usa CSS.
+  if(els.shell.requestFullscreen){
+    try{
+      await els.shell.requestFullscreen({navigationUI:'hide'});
+      if(token!==fullscreenOpenId)return;
+      if(document.fullscreenElement===els.shell){
+        native=true;
+        immersiveFallback=false;
+        syncFullscreenUI();
+        if(isMobile && matchMedia('(orientation:portrait)').matches){
+          try{if(screen.orientation?.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(_e){}
+        }
+      }
+    }catch(_e){
+      if(token===fullscreenOpenId)syncFullscreenUI();
+    }
   }
+  if(token===fullscreenOpenId && isMobile)scheduleFullScreenGuide({native,token});
 }
 async function toggleImmersive(){
   if(isImmersive())await exitImmersive();else await enterImmersive();
 }
 document.addEventListener('fullscreenchange',()=>{
-  if(document.fullscreenElement!==els.shell)immersiveFallback=false;
+  if(document.fullscreenElement!==els.shell){
+    immersiveFallback=false;
+    clearTimeout(readingTipDelay);
+    if(els.toast.classList.contains('reading-tip')){
+      clearTimeout(toastTimeout);
+      els.toast.classList.remove('visible','reading-tip');
+    }
+  }
   syncFullscreenUI();
 });
 // Painel de áudio dentro do elemento em tela cheia, para funcionar no Android.
