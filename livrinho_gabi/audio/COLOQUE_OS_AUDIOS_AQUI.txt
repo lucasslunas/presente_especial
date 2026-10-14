@@ -1,4 +1,0 @@
-Coloque aqui os arquivos de áudio das músicas e a gravação final.
-Abra ../trilhas.js para atribuir qualquer áudio a uma das 23 páginas.
-Você pode escolher o início/fim do trecho e várias músicas por página.
-Não é necessário editar app.js.
