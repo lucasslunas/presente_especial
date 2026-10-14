@@ -291,3 +291,25 @@
     box-shadow:0 8px 30px rgba(0,0,0,.58);
   }
 }
+
+/* Guia de uso no céu à direita, acima dos personagens.
+   Apenas no modo de leitura em tela cheia com o celular deitado. */
+@media (orientation:landscape) and (max-height:650px) and (pointer:coarse) {
+  .shell.is-immersive .toast.reading-tip,
+  .shell:fullscreen .toast.reading-tip {
+    top:max(78px,14dvh);
+    right:clamp(72px,16vw,220px);
+    bottom:auto;
+    left:auto;
+    width:max-content;
+    max-width:min(395px,41vw);
+    padding:12px 14px;
+    text-align:left;
+    line-height:1.46;
+    font-size:clamp(11px,1.25vw,13px);
+    border-radius:14px;
+    transform:translateY(10px);
+  }
+  .shell.is-immersive .toast.reading-tip.visible,
+  .shell:fullscreen .toast.reading-tip.visible {transform:translateY(0)}
+}
