@@ -88,8 +88,8 @@ window.TRILHAS_GABI = {
     { titulo: 'Aquarela — Toquinho (cover de piano, PiaNostalgia; 0:00 a 1:10)', arquivo: 'audio/aquarela-piano-coracao-0-a-70.mp3', inicio: 0, fim: 70, tipo: 'musica' },
   ],
   23: [], // O que o futuro reserva...
-  24: [ // Obrigado por existir, Gabi. ♡
-    { titulo: 'Uma mensagem do Lucas para a Gabi ♡', arquivo: 'audio/mensagem-final-lucas.mp3', inicio: 0, fim: null, tipo: 'voz' },
-    // Para adicionar uma música AQUI também, acrescente outra faixa após a voz.
+  24: [ // Obrigado por existir, Gabi. ♡ — as duas gravações são uma só mensagem.
+    { titulo: 'Mensagem do Lucas — Parte 1 ♡', arquivo: 'audio/mensagem-final-lucas.mp3', inicio: 0, fim: null, tipo: 'voz', proximaAutomatica: true },
+    { titulo: 'Mensagem do Lucas — Parte 2 ♡', arquivo: 'audio/mensagem-final-lucas-continuacao.mp3', inicio: 0, fim: null, tipo: 'voz' },
   ],
 };

@@ -13,7 +13,7 @@
  * “O último abraço” (0:52–1:08 de Dois Passarinhos)
  * “Um poema pra você” (0:00–1:13 de Seu Astral) e a trilha contínua
  * entre as páginas 12 e 13 (0:00–1:00 de Quando Bate Aquela Saudade) já estão incluídas.
- * A mensagem de voz da página 24 está incluída e só toca após clique intencional.
+ * As duas mensagens de voz da página 24 tocam em sequência (sujeitas à política do navegador).
  */
 const pages = [
   {slug:'01-capa', title:'Oi, Gabi! ♡', chapter:'O começo', category:'Uma surpresa feita com carinho', alt:'Capa do livrinho: Lucas e Gabi contemplam um pôr do sol sobre a cidade.'},
@@ -124,14 +124,15 @@ function renderAudioPanel(){
       if(pos===trackIndex&&isReady)button.classList.add('selected');
       const symbol=document.createElement('span');symbol.className='audio-track-icon';symbol.textContent=entry.tipo==='voz'?'🎙':'♫';
       const label=document.createElement('span');label.className='audio-track-title';label.textContent=entry.titulo||'Música sem título';
-      const note=document.createElement('small');note.textContent=isReady ? `Trecho: ${timeText(Number(entry.inicio)||0)}${entry.fim==null?' até o fim':` – ${timeText(Number(entry.fim))}`}`:'Ainda não adicionada';
+      const note=document.createElement('small');
+      note.textContent=!isReady ? 'Ainda não adicionada' : entry.proximaAutomatica ? 'Parte 1 · a continuação começa automaticamente' : entry.tipo==='voz' ? 'Parte 2 · encerramento' : `Trecho: ${timeText(Number(entry.inicio)||0)}${entry.fim==null?' até o fim':` – ${timeText(Number(entry.fim))}`}`;
       label.append(note);button.append(symbol,label);
       if(isReady)button.addEventListener('click',()=>{trackIndex=pos;stopAudio();renderAudioPanel();playSelectedTrack();});
       els.audioTracks.append(button);
     });
   }
   els.audioAuto.checked=autoSoundtrack;
-  $('#audioPanelTitle').textContent=chosenTrack()?.tipo==='voz'?'Uma mensagem do Lucas ♡':'A música desta página';
+  $('#audioPanelTitle').textContent=chosenTrack()?.tipo==='voz' ? (configuredTracks().filter(t=>t.tipo==='voz').length>1?'Duas mensagens do Lucas ♡':'Uma mensagem do Lucas ♡') : 'A música desta página';
   refreshTransport();
 }
 function updateAudio(){
@@ -178,7 +179,22 @@ els.audio.addEventListener('loadedmetadata',()=>{
   const t=chosenTrack();if(t){const start=Math.max(0,Number(t.inicio)||0);if(els.audio.currentTime<start)els.audio.currentTime=start;}
   refreshTransport();
 });
-els.audio.addEventListener('ended',()=>{audioPlaying=false;refreshTransport();updateAudio();});
+// Se a primeira mensagem terminar naturalmente, inicia a segunda automaticamente.
+// Também funciona se a pessoa clicar na primeira faixa dentro do player.
+els.audio.addEventListener('ended',()=>{
+  const finished=chosenTrack();
+  const nextTrack=configuredTracks()[trackIndex+1];
+  audioPlaying=false;
+  if(finished?.proximaAutomatica && nextTrack?.tipo==='voz'){
+    trackIndex++;
+    stopAudio();
+    updateAudio();
+    void playSelectedTrack(); // Caso o celular bloqueie, o botão de Play continua disponível.
+    return;
+  }
+  refreshTransport();
+  updateAudio();
+});
 els.audio.addEventListener('timeupdate',()=>{
   const t=chosenTrack();if(!t)return;
   if(t.fim!=null && els.audio.currentTime>=Number(t.fim)){
